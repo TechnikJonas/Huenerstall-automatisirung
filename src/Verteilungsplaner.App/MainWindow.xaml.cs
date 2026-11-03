@@ -26,10 +26,15 @@ public partial class MainWindow : Window
         if (e.PropertyName != nameof(MainViewModel.CurrentPage) || sender is not MainViewModel vm)
             return;
 
-        if (vm.CurrentPage == vm.CableLists)
-            NavCableLists.IsChecked = true;
-        else if (vm.CurrentPage == vm.Settings)
-            NavSettings.IsChecked = true;
+        var nav = vm.CurrentPage switch
+        {
+            var p when p == vm.CableLists => NavCableLists,
+            var p when p == vm.RoomFunctions => NavRoomFunctions,
+            var p when p == vm.Actuators => NavActuators,
+            var p when p == vm.Settings => NavSettings,
+            _ => NavStart,
+        };
+        nav.IsChecked = true;
     }
 
     /// <summary>Übernimmt noch offene Eingaben (Tabellenzellen, Textfelder), damit beim Schließen nichts verloren geht.</summary>

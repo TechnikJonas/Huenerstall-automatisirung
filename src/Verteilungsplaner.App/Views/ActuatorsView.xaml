@@ -1,0 +1,108 @@
+<UserControl x:Class="Verteilungsplaner.App.Views.ActuatorsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:core="clr-namespace:Verteilungsplaner.Core.Services;assembly=Verteilungsplaner.Core">
+    <UserControl.Resources>
+        <Style x:Key="GridComboBox" TargetType="ComboBox">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="4,2" />
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- Kopf -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Projekt:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource MutedTextBrush}" />
+                <ComboBox Width="280" ItemsSource="{Binding Projects}" SelectedItem="{Binding SelectedProject}" DisplayMemberPath="Name" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Style="{StaticResource PageTitle}" Text="Aktoren" />
+                <TextBlock Style="{StaticResource PageSubtitle}" Margin="0"
+                           Text="Aktoren aus den Vorlagen (Einstellungen) ins Projekt übernehmen – in einer UV oder als UP-Aktor in einem Raum. Die Zuweisung der Kanäle erfolgt unter Raum-Funktionen." />
+            </StackPanel>
+        </DockPanel>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="16" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Aktoren im Projekt -->
+            <Border Style="{StaticResource Card}">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding Summary}" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" />
+                        <TextBlock Style="{StaticResource SectionTitle}" Margin="0" Text="Aktoren im Projekt" />
+                    </DockPanel>
+
+                    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,10" IsEnabled="{Binding HasProject}">
+                        <TextBlock Text="Vorlage:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{StaticResource MutedTextBrush}" />
+                        <ComboBox Width="260" Margin="0,0,6,0" ItemsSource="{Binding Templates}" SelectedItem="{Binding NewTemplate}" DisplayMemberPath="Name" />
+                        <Button Style="{StaticResource PrimaryButton}" Content="+ Aktor hinzufügen" Command="{Binding AddActuatorCommand}" />
+                        <Button Style="{StaticResource DangerButton}" Content="Aktor löschen" Command="{Binding DeleteActuatorCommand}" />
+                    </WrapPanel>
+
+                    <DataGrid ItemsSource="{Binding Actuators}" SelectedItem="{Binding SelectedActuator}" CanUserSortColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Kennz." Binding="{Binding Entity.Name}" Width="70" />
+                            <DataGridTemplateColumn Header="Vorlage" Width="230">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox Style="{StaticResource GridComboBox}" DisplayMemberPath="Name" SelectedValuePath="Id"
+                                                  ItemsSource="{Binding DataContext.Templates, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                  SelectedValue="{Binding Entity.TemplateId, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Einbau" Binding="{Binding MountingName}" IsReadOnly="True" Width="120" />
+                            <DataGridTemplateColumn Header="UV / Raum" Width="150">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox Style="{StaticResource GridComboBox}" DisplayMemberPath="Name" SelectedValuePath="Id"
+                                                  ItemsSource="{Binding LocationOptions}"
+                                                  SelectedValue="{Binding LocationId, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Daten" Binding="{Binding TemplateInfo}" IsReadOnly="True" Width="260" />
+                            <DataGridTextColumn Header="Belegung" Binding="{Binding Occupancy}" IsReadOnly="True" Width="150" />
+                            <DataGridTextColumn Header="Bemerkung" Binding="{Binding Entity.Remark}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+
+            <!-- Kanalübersicht -->
+            <Border Grid.Row="2" Style="{StaticResource Card}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitle}" Text="{Binding ChannelTitle}" />
+                    <DataGrid ItemsSource="{Binding Channels}" IsReadOnly="True" CanUserSortColumns="False">
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding State}" Value="{x:Static core:LoadState.Overload}">
+                                        <Setter Property="Background" Value="#FDE7E6" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding State}" Value="{x:Static core:LoadState.Warning}">
+                                        <Setter Property="Background" Value="#FFF6DB" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Kanal" Binding="{Binding Channel, StringFormat=K{0}}" Width="60" />
+                            <DataGridTextColumn Header="Zugewiesene Raum-Funktionen" Binding="{Binding Assigned}" Width="*" />
+                            <DataGridTextColumn Header="Strom" Binding="{Binding Current}" Width="80" />
+                            <DataGridTextColumn Header="Leistung" Binding="{Binding Power}" Width="80" />
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="260" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

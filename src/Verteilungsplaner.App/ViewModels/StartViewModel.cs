@@ -8,7 +8,7 @@ using Verteilungsplaner.Core.Services;
 namespace Verteilungsplaner.App.ViewModels;
 
 /// <summary>Startseite: Projekte, deren Unterverteilungen (UV) und Räume anlegen.</summary>
-public partial class StartViewModel : ObservableObject
+public partial class StartViewModel : ObservableObject, IProjectPage
 {
     private readonly PlannerDataService _data;
     private readonly IDialogService _dialogs;

@@ -13,6 +13,12 @@
         <DataTemplate DataType="{x:Type vm:CableListsViewModel}">
             <views:CableListsView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RoomFunctionsViewModel}">
+            <views:RoomFunctionsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ActuatorsViewModel}">
+            <views:ActuatorsView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
             <views:SettingsView />
         </DataTemplate>
@@ -30,12 +36,16 @@
                 <TextBlock Text="⚡ Verteilungsplaner" Foreground="White" FontSize="17" FontWeight="SemiBold" />
                 <TextBlock Text="Planung von Verteilungen" Foreground="#8FA1B3" FontSize="11" Margin="0,2,0,0" />
             </StackPanel>
-            <TextBlock DockPanel.Dock="Bottom" Text="Version 0.1" Foreground="#6E8093" FontSize="11" Margin="18,0,0,14" />
+            <TextBlock DockPanel.Dock="Bottom" Text="Version 0.2" Foreground="#6E8093" FontSize="11" Margin="18,0,0,14" />
             <StackPanel>
-                <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" IsChecked="True"
+                <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" IsChecked="True" x:Name="NavStart"
                              Command="{Binding ShowStartCommand}" Content="🏠  Start" />
                 <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" x:Name="NavCableLists"
                              Command="{Binding ShowCableListsPageCommand}" Content="🔌  Kabellisten" />
+                <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" x:Name="NavRoomFunctions"
+                             Command="{Binding ShowRoomFunctionsCommand}" Content="💡  Raum-Funktionen" />
+                <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" x:Name="NavActuators"
+                             Command="{Binding ShowActuatorsCommand}" Content="🎛  Aktoren" />
                 <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" x:Name="NavSettings"
                              Command="{Binding ShowSettingsCommand}" Content="⚙  Einstellungen" />
             </StackPanel>

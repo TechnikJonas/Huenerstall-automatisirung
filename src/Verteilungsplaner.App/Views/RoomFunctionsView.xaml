@@ -1,0 +1,137 @@
+<UserControl x:Class="Verteilungsplaner.App.Views.RoomFunctionsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:core="clr-namespace:Verteilungsplaner.Core.Services;assembly=Verteilungsplaner.Core">
+    <UserControl.Resources>
+        <Style x:Key="GridComboBox" TargetType="ComboBox">
+            <Setter Property="DisplayMemberPath" Value="Name" />
+            <Setter Property="SelectedValuePath" Value="Id" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="4,2" />
+        </Style>
+        <Style x:Key="RightAligned" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- Kopf -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Projekt:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource MutedTextBrush}" />
+                <ComboBox Width="280" ItemsSource="{Binding Projects}" SelectedItem="{Binding SelectedProject}" DisplayMemberPath="Name" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Style="{StaticResource PageTitle}" Text="Raum-Funktionen &amp; Aktorzuweisung" />
+                <TextBlock Style="{StaticResource PageSubtitle}" Margin="0"
+                           Text="Alle Funktionen je Raum aus den Kabellisten. Funktionen können in mehrere Kreise aufgeteilt und einem Kanal eines Schalt- oder Dimmaktors zugewiesen werden. Die Last wird je Kanal geprüft." />
+            </StackPanel>
+        </DockPanel>
+
+        <Border Style="{StaticResource Card}">
+            <DockPanel>
+                <!-- Werkzeugleiste -->
+                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,10" IsEnabled="{Binding HasProject}">
+                    <Button Style="{StaticResource PrimaryButton}" Content="+ Kreis aufteilen" Command="{Binding AddCircuitCommand}"
+                            ToolTip="Weiteren Kreis für die ausgewählte Raum-Funktion anlegen (z. B. Beleuchtung Kreis 2)" />
+                    <Button Style="{StaticResource DangerButton}" Content="Zeile löschen" Command="{Binding DeleteRowCommand}" />
+                    <Button Content="⟳ Aus Kabellisten übernehmen" Command="{Binding SyncFromCablesCommand}" />
+
+                    <Border Width="1" Background="{StaticResource BorderBrushLight}" Margin="6,2,12,2" />
+
+                    <ComboBox Width="150" Margin="0,0,6,0" ItemsSource="{Binding RoomOptions}" DisplayMemberPath="Name"
+                              SelectedValuePath="Id" SelectedValue="{Binding NewRoomId}" ToolTip="Raum" />
+                    <ComboBox Width="150" Margin="0,0,6,0" ItemsSource="{Binding FunctionOptions}" DisplayMemberPath="Name"
+                              SelectedValuePath="Id" SelectedValue="{Binding NewFunctionId}" ToolTip="Funktion" />
+                    <Button Content="+ Raum-Funktion" Command="{Binding AddRoomFunctionCommand}"
+                            ToolTip="Raum-Funktion manuell hinzufügen (auch ohne Kabel)" />
+
+                    <Border Width="1" Background="{StaticResource BorderBrushLight}" Margin="6,2,12,2" />
+
+                    <TextBlock Text="Filter:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{StaticResource MutedTextBrush}" />
+                    <ComboBox Width="150" Margin="0,0,8,0" ItemsSource="{Binding RoomFilterOptions}" DisplayMemberPath="Name"
+                              SelectedValuePath="Id" SelectedValue="{Binding RoomFilter}" />
+                    <CheckBox Content="nur ohne Aktor" VerticalAlignment="Center" IsChecked="{Binding OnlyUnassigned}" />
+                </WrapPanel>
+
+                <TextBlock DockPanel.Dock="Bottom" Margin="0,10,0,0" Text="{Binding Summary}" Foreground="{StaticResource MutedTextBrush}" />
+
+                <DataGrid ItemsSource="{Binding RowsView}" SelectedItem="{Binding SelectedRow}"
+                          FrozenColumnCount="3" CanUserSortColumns="False" HorizontalScrollBarVisibility="Auto">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding State}" Value="{x:Static core:LoadState.Overload}">
+                                    <Setter Property="Background" Value="#FDE7E6" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding State}" Value="{x:Static core:LoadState.Warning}">
+                                    <Setter Property="Background" Value="#FFF6DB" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Raum" Binding="{Binding RoomLabel}" IsReadOnly="True" Width="140" />
+                        <DataGridTextColumn Header="Funktion" Binding="{Binding FunctionName}" IsReadOnly="True" Width="130" />
+                        <DataGridTextColumn Header="Kreis" Binding="{Binding Entity.Circuit}" Width="48"
+                                            ElementStyle="{StaticResource RightAligned}" />
+                        <DataGridTextColumn Header="Bezeichnung" Binding="{Binding Entity.Designation}" Width="150" />
+                        <DataGridTextColumn Header="Kabel" Binding="{Binding Cables}" IsReadOnly="True" Width="140">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                    <Setter Property="ToolTip" Value="{Binding Cables}" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Last (A)" Binding="{Binding Entity.LoadCurrent, TargetNullValue=''}" Width="65"
+                                            ElementStyle="{StaticResource RightAligned}" />
+                        <DataGridTextColumn Header="Last (W)" Binding="{Binding Entity.LoadPower, TargetNullValue=''}" Width="65"
+                                            ElementStyle="{StaticResource RightAligned}" />
+                        <DataGridTemplateColumn Header="Aktor" Width="230">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox Style="{StaticResource GridComboBox}"
+                                              ItemsSource="{Binding DataContext.ActuatorOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                              SelectedValue="{Binding Entity.ActuatorId, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Kanal" Width="65">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox Style="{StaticResource GridComboBox}"
+                                              ItemsSource="{Binding ChannelOptions}"
+                                              SelectedValue="{Binding Entity.Channel, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Prüfung" Binding="{Binding Status}" IsReadOnly="True" Width="200">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="ToolTip" Value="{Binding Status}" />
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding State}" Value="{x:Static core:LoadState.Overload}">
+                                            <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding State}" Value="{x:Static core:LoadState.Ok}">
+                                            <Setter Property="Foreground" Value="#1E7B34" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding State}" Value="{x:Static core:LoadState.Unassigned}">
+                                            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Bemerkung" Binding="{Binding Entity.Remark}" Width="160" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
+    </DockPanel>
+</UserControl>

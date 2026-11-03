@@ -56,6 +56,9 @@ public class AutoSaver
                 case CableFunction f: _data.Update(f); break;
                 case CableList l: _data.Update(l); break;
                 case Cable c: _data.Update(c); break;
+                case ActuatorTemplate t: _data.Update(t); break;
+                case Actuator a: _data.Update(a); break;
+                case RoomFunction rf: _data.Update(rf); break;
             }
             Saved?.Invoke(this, entity);
         }

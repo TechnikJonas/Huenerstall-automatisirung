@@ -17,6 +17,98 @@ namespace Verteilungsplaner.Core.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
 
+            modelBuilder.Entity("Verteilungsplaner.Core.Models.Actuator", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("DistributionBoardId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Remark")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("RoomId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TemplateId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DistributionBoardId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("TemplateId");
+
+                    b.ToTable("Actuators");
+                });
+
+            modelBuilder.Entity("Verteilungsplaner.Core.Models.ActuatorTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ArticleNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ChannelCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Manufacturer")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("MaxCurrentPerChannel")
+                        .HasColumnType("REAL");
+
+                    b.Property<double?>("MaxPowerPerChannel")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("Mounting")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<double?>("WidthTe")
+                        .HasColumnType("REAL");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ActuatorTemplates");
+                });
+
+            modelBuilder.Entity("Verteilungsplaner.Core.Models.AppSetting", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("AppSettings");
+                });
+
             modelBuilder.Entity("Verteilungsplaner.Core.Models.Cable", b =>
                 {
                     b.Property<int>("Id")
@@ -211,6 +303,80 @@ namespace Verteilungsplaner.Core.Data.Migrations
                     b.ToTable("Rooms");
                 });
 
+            modelBuilder.Entity("Verteilungsplaner.Core.Models.RoomFunction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("ActuatorId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("Channel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Circuit")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Designation")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FunctionId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double?>("LoadCurrent")
+                        .HasColumnType("REAL");
+
+                    b.Property<double?>("LoadPower")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Remark")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RoomId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActuatorId");
+
+                    b.HasIndex("FunctionId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("RoomId");
+
+                    b.ToTable("RoomFunctions");
+                });
+
+            modelBuilder.Entity("Verteilungsplaner.Core.Models.Actuator", b =>
+                {
+                    b.HasOne("Verteilungsplaner.Core.Models.DistributionBoard", null)
+                        .WithMany()
+                        .HasForeignKey("DistributionBoardId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Verteilungsplaner.Core.Models.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Verteilungsplaner.Core.Models.Room", null)
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Verteilungsplaner.Core.Models.ActuatorTemplate", null)
+                        .WithMany()
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Verteilungsplaner.Core.Models.Cable", b =>
                 {
                     b.HasOne("Verteilungsplaner.Core.Models.CableList", null)
@@ -259,6 +425,32 @@ namespace Verteilungsplaner.Core.Data.Migrations
                     b.HasOne("Verteilungsplaner.Core.Models.Project", null)
                         .WithMany()
                         .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Verteilungsplaner.Core.Models.RoomFunction", b =>
+                {
+                    b.HasOne("Verteilungsplaner.Core.Models.Actuator", null)
+                        .WithMany()
+                        .HasForeignKey("ActuatorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Verteilungsplaner.Core.Models.CableFunction", null)
+                        .WithMany()
+                        .HasForeignKey("FunctionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Verteilungsplaner.Core.Models.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Verteilungsplaner.Core.Models.Room", null)
+                        .WithMany()
+                        .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

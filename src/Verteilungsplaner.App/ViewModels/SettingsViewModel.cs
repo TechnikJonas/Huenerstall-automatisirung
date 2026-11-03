@@ -7,7 +7,10 @@ using Verteilungsplaner.Core.Services;
 
 namespace Verteilungsplaner.App.ViewModels;
 
-/// <summary>Einstellungen: Funktionen, die in allen Kabellisten zur Auswahl stehen.</summary>
+/// <summary>
+/// Einstellungen: Funktionen, die in allen Kabellisten zur Auswahl stehen,
+/// und Aktor-Vorlagen (Grundkonfigurationen), die in allen Projekten verwendet werden.
+/// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly PlannerDataService _data;
@@ -35,6 +38,16 @@ public partial class SettingsViewModel : ObservableObject
 
     public string DatabasePath => App.DatabasePath;
 
+    public ObservableCollection<ActuatorTemplate> Templates { get; } = new();
+
+    public IReadOnlyList<Option<ActuatorKind>> KindOptions => Options.ActuatorKinds;
+
+    public IReadOnlyList<Option<ActuatorMounting>> MountingOptions => Options.ActuatorMountings;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteTemplateCommand), nameof(DuplicateTemplateCommand))]
+    private ActuatorTemplate? _selectedTemplate;
+
     public void Load()
     {
         _autoSaver.UntrackAll<CableFunction>();
@@ -43,6 +56,14 @@ public partial class SettingsViewModel : ObservableObject
         {
             _autoSaver.Track(f);
             Functions.Add(f);
+        }
+
+        _autoSaver.UntrackAll<ActuatorTemplate>();
+        Templates.Clear();
+        foreach (var t in _data.GetActuatorTemplates())
+        {
+            _autoSaver.Track(t);
+            Templates.Add(t);
         }
     }
 
@@ -120,5 +141,69 @@ public partial class SettingsViewModel : ObservableObject
         foreach (var f in Functions)
             _autoSaver.Track(f);
         SelectedFunction = selected;
+    }
+
+    // ---------- Aktor-Vorlagen ----------
+
+    [RelayCommand]
+    private void AddTemplate() => InsertTemplate(new ActuatorTemplate
+    {
+        Name = "Neuer Schaltaktor",
+        Kind = ActuatorKind.Switch,
+        Mounting = ActuatorMounting.DistributionBoard,
+        ChannelCount = 8,
+        MaxCurrentPerChannel = 16,
+    });
+
+    private bool HasTemplate() => SelectedTemplate != null;
+
+    [RelayCommand(CanExecute = nameof(HasTemplate))]
+    private void DuplicateTemplate()
+    {
+        if (SelectedTemplate is not { } t)
+            return;
+
+        InsertTemplate(new ActuatorTemplate
+        {
+            Name = t.Name + " (Kopie)",
+            Kind = t.Kind,
+            Mounting = t.Mounting,
+            ChannelCount = t.ChannelCount,
+            MaxCurrentPerChannel = t.MaxCurrentPerChannel,
+            MaxPowerPerChannel = t.MaxPowerPerChannel,
+            Manufacturer = t.Manufacturer,
+            ArticleNumber = t.ArticleNumber,
+            WidthTe = t.WidthTe,
+        });
+    }
+
+    private void InsertTemplate(ActuatorTemplate template)
+    {
+        _data.Add(template);
+        _autoSaver.Track(template);
+        Templates.Add(template);
+        SelectedTemplate = template;
+    }
+
+    [RelayCommand(CanExecute = nameof(HasTemplate))]
+    private void DeleteTemplate()
+    {
+        if (SelectedTemplate is not { } template)
+            return;
+
+        var used = _data.CountActuatorsWithTemplate(template.Id);
+        if (used > 0)
+        {
+            _dialogs.Info($"Die Vorlage \"{template.Name}\" wird noch von {used} Aktor(en) in Projekten verwendet " +
+                          "und kann daher nicht gelöscht werden.");
+            return;
+        }
+
+        if (!_dialogs.Confirm($"Aktor-Vorlage \"{template.Name}\" wirklich löschen?"))
+            return;
+
+        _data.Delete(template);
+        _autoSaver.Untrack(template);
+        Templates.Remove(template);
     }
 }

@@ -2,7 +2,7 @@
 
 Windows-Software (WPF, .NET 8) zur Planung von Elektro-Verteilungen.
 
-## Funktionen (Version 0.1)
+## Funktionen (Version 0.2)
 
 - **Start**: Projekte anlegen (Name, Projektnummer, Kunde, Adresse, Beschreibung).
   Je Projekt werden die **Unterverteilungen (UV)** und **Räume** (mit Geschoss) gepflegt.
@@ -14,7 +14,22 @@ Windows-Software (WPF, .NET 8) zur Planung von Elektro-Verteilungen.
   - Räume können auch direkt in der Kabelliste angelegt werden.
   - Anzahl und Gesamtlänge werden angezeigt.
   - **Excel-Export** (.xlsx) mit Kopfdaten, Filter und Summenzeile.
-- **Einstellungen**: Funktionen (z. B. Beleuchtung, Steckdosen, Rollladen …) zentral für
+- **Raum-Funktionen**: Tabelle aller Funktionen je Raum – wird automatisch aus den Kabellisten
+  befüllt (jede Kombination Raum + Funktion). Eine Raum-Funktion kann in mehrere **Kreise**
+  aufgeteilt werden (z. B. Wohnzimmer – Beleuchtung Kreis 1, 2, 3). Je Zeile:
+  - Last in **A** und/oder **W** eintragen,
+  - einem **Schalt- oder Dimmaktor** und einem **Kanal** zuweisen (freier Kanal wird vorgeschlagen),
+  - automatische **Lastprüfung**: Kanal vorhanden? Summe aller Lasten am Kanal ≤ max. A / max. W?
+    Überlast wird rot, Hinweise gelb markiert. UP-Aktoren in einem anderen Raum werden gemeldet.
+  - Filter nach Raum und „nur ohne Aktor“.
+- **Aktoren**: Aktoren des Projekts aus den Vorlagen anlegen (A1, A2, …). Aktoren für die
+  Verteilung werden einer **UV**, UP-Aktoren einem **Raum** zugeordnet. Belegung je Aktor
+  („3/8 belegt“) und Kanalübersicht mit zugewiesenen Raum-Funktionen und Last.
+- **Einstellungen → Aktor-Vorlagen**: Grundkonfigurationen für alle Projekte mit Name, Typ
+  (Schalt-/Dimmaktor), Einbauort (Verteilung/REG oder Raum/UP-Dose), Kanalanzahl,
+  max. Strom je Kanal (A), max. Leistung je Kanal (W), TE, Hersteller und Artikel-Nr.
+  Einige herstellerneutrale Vorlagen sind vorbelegt.
+- **Einstellungen → Funktionen**: Funktionen (z. B. Beleuchtung, Steckdosen, Rollladen …) zentral für
   **alle** Kabellisten anlegen, umbenennen, sortieren und löschen. Beim ersten Start werden
   gängige Funktionen vorbelegt.
 

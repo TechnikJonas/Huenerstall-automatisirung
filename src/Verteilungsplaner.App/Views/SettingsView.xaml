@@ -5,10 +5,10 @@
         <StackPanel DockPanel.Dock="Top">
             <TextBlock Style="{StaticResource PageTitle}" Text="Einstellungen" />
             <TextBlock Style="{StaticResource PageSubtitle}"
-                       Text="Die hier gepflegten Funktionen stehen in allen Kabellisten aller Projekte zur Auswahl." />
+                       Text="Funktionen und Aktor-Vorlagen gelten für alle Projekte." />
         </StackPanel>
 
-        <Border DockPanel.Dock="Bottom" Style="{StaticResource Card}" Margin="0,16,0,0" MaxWidth="900" HorizontalAlignment="Left">
+        <Border DockPanel.Dock="Bottom" Style="{StaticResource Card}" Margin="0,16,0,0" HorizontalAlignment="Left">
             <StackPanel>
                 <TextBlock Style="{StaticResource SectionTitle}" Text="Datenbank" />
                 <TextBlock Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap">
@@ -19,51 +19,99 @@
             </StackPanel>
         </Border>
 
-        <Border Style="{StaticResource Card}" MaxWidth="900" HorizontalAlignment="Left">
-            <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitle}" Text="Funktionen" />
+        <TabControl Padding="0" Background="{StaticResource CardBrush}">
+            <TabItem Header="Funktionen">
+                <Border Style="{StaticResource Card}" BorderThickness="0" MaxWidth="900" HorizontalAlignment="Left">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitle}" Text="Funktionen" />
 
-                <Grid DockPanel.Dock="Bottom" Margin="0,12,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="220" />
-                        <ColumnDefinition Width="8" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <TextBlock Style="{StaticResource FieldLabel}" Text="Neue Funktion" />
-                    <TextBlock Grid.Column="2" Style="{StaticResource FieldLabel}" Text="Beschreibung (optional)" />
-                    <TextBox Grid.Row="1" Text="{Binding NewFunctionName, UpdateSourceTrigger=PropertyChanged}">
-                        <TextBox.InputBindings>
-                            <KeyBinding Key="Enter" Command="{Binding AddFunctionCommand}" />
-                        </TextBox.InputBindings>
-                    </TextBox>
-                    <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding NewFunctionDescription, UpdateSourceTrigger=PropertyChanged}">
-                        <TextBox.InputBindings>
-                            <KeyBinding Key="Enter" Command="{Binding AddFunctionCommand}" />
-                        </TextBox.InputBindings>
-                    </TextBox>
-                    <Button Grid.Row="1" Grid.Column="3" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0"
-                            Content="+ Hinzufügen" Command="{Binding AddFunctionCommand}" />
-                </Grid>
+                        <Grid DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="220" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="Neue Funktion" />
+                            <TextBlock Grid.Column="2" Style="{StaticResource FieldLabel}" Text="Beschreibung (optional)" />
+                            <TextBox Grid.Row="1" Text="{Binding NewFunctionName, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding AddFunctionCommand}" />
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding NewFunctionDescription, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding AddFunctionCommand}" />
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <Button Grid.Row="1" Grid.Column="3" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0"
+                                    Content="+ Hinzufügen" Command="{Binding AddFunctionCommand}" />
+                        </Grid>
 
-                <DockPanel>
-                    <StackPanel DockPanel.Dock="Right" Margin="10,0,0,0">
-                        <Button Content="▲ Nach oben" Margin="0,0,0,6" Command="{Binding MoveUpCommand}" />
-                        <Button Content="▼ Nach unten" Margin="0,0,0,6" Command="{Binding MoveDownCommand}" />
-                        <Button Style="{StaticResource DangerButton}" Content="Löschen" Margin="0" Command="{Binding DeleteFunctionCommand}" />
-                    </StackPanel>
-                    <DataGrid ItemsSource="{Binding Functions}" SelectedItem="{Binding SelectedFunction}" CanUserSortColumns="False">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Funktion" Binding="{Binding Name}" Width="220" />
-                            <DataGridTextColumn Header="Beschreibung" Binding="{Binding Description}" Width="*" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </DockPanel>
-            </DockPanel>
-        </Border>
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Right" Margin="10,0,0,0">
+                                <Button Content="▲ Nach oben" Margin="0,0,0,6" Command="{Binding MoveUpCommand}" />
+                                <Button Content="▼ Nach unten" Margin="0,0,0,6" Command="{Binding MoveDownCommand}" />
+                                <Button Style="{StaticResource DangerButton}" Content="Löschen" Margin="0" Command="{Binding DeleteFunctionCommand}" />
+                            </StackPanel>
+                            <DataGrid ItemsSource="{Binding Functions}" SelectedItem="{Binding SelectedFunction}" CanUserSortColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Funktion" Binding="{Binding Name}" Width="220" />
+                                    <DataGridTextColumn Header="Beschreibung" Binding="{Binding Description}" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </DockPanel>
+                </Border>
+            </TabItem>
+            <TabItem Header="Aktor-Vorlagen">
+                <Border Style="{StaticResource Card}" BorderThickness="0">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitle}" Text="Aktor-Vorlagen (Grundkonfiguration)" />
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource PageSubtitle}" Margin="0,0,0,10"
+                                   Text="Vorlagen gelten für alle Projekte. Unter Aktoren werden daraus die tatsächlichen Aktoren eines Projekts angelegt. Strom und Leistung gelten je Kanal." />
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,12,0,0">
+                            <Button Style="{StaticResource PrimaryButton}" Content="+ Neue Vorlage" Command="{Binding AddTemplateCommand}" />
+                            <Button Content="Duplizieren" Command="{Binding DuplicateTemplateCommand}" />
+                            <Button Style="{StaticResource DangerButton}" Content="Löschen" Command="{Binding DeleteTemplateCommand}" />
+                        </StackPanel>
+                        <DataGrid ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}"
+                                  CanUserSortColumns="False" HorizontalScrollBarVisibility="Auto">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200" />
+                                <DataGridTemplateColumn Header="Typ" Width="110">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox BorderThickness="0" Background="Transparent" DisplayMemberPath="Name" SelectedValuePath="Value"
+                                                      ItemsSource="{Binding DataContext.KindOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                      SelectedValue="{Binding Kind, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Einbauort" Width="130">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox BorderThickness="0" Background="Transparent" DisplayMemberPath="Name" SelectedValuePath="Value"
+                                                      ItemsSource="{Binding DataContext.MountingOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                      SelectedValue="{Binding Mounting, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Kanäle" Binding="{Binding ChannelCount}" Width="60" />
+                                <DataGridTextColumn Header="max. A / Kanal" Binding="{Binding MaxCurrentPerChannel}" Width="95" />
+                                <DataGridTextColumn Header="max. W / Kanal" Binding="{Binding MaxPowerPerChannel, TargetNullValue=''}" Width="95" />
+                                <DataGridTextColumn Header="TE" Binding="{Binding WidthTe, TargetNullValue=''}" Width="45" />
+                                <DataGridTextColumn Header="Hersteller" Binding="{Binding Manufacturer}" Width="110" />
+                                <DataGridTextColumn Header="Artikel-Nr." Binding="{Binding ArticleNumber}" Width="120" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Border>
+            </TabItem>
+        </TabControl>
     </DockPanel>
 </UserControl>

@@ -41,6 +41,21 @@ public class PlannerDataService
         "Außenbeleuchtung",
     };
 
+    /// <summary>Vorbelegte Aktor-Vorlagen (herstellerneutral), werden beim ersten Start angelegt.</summary>
+    public static IReadOnlyList<ActuatorTemplate> CreateDefaultActuatorTemplates() => new[]
+    {
+        new ActuatorTemplate { Name = "Schaltaktor 4-fach 16 A", Kind = ActuatorKind.Switch, Mounting = ActuatorMounting.DistributionBoard, ChannelCount = 4, MaxCurrentPerChannel = 16, WidthTe = 4 },
+        new ActuatorTemplate { Name = "Schaltaktor 8-fach 16 A", Kind = ActuatorKind.Switch, Mounting = ActuatorMounting.DistributionBoard, ChannelCount = 8, MaxCurrentPerChannel = 16, WidthTe = 8 },
+        new ActuatorTemplate { Name = "Schaltaktor 12-fach 16 A", Kind = ActuatorKind.Switch, Mounting = ActuatorMounting.DistributionBoard, ChannelCount = 12, MaxCurrentPerChannel = 16, WidthTe = 12 },
+        new ActuatorTemplate { Name = "Dimmaktor 4-fach 300 W", Kind = ActuatorKind.Dimmer, Mounting = ActuatorMounting.DistributionBoard, ChannelCount = 4, MaxCurrentPerChannel = 1.3, MaxPowerPerChannel = 300, WidthTe = 4 },
+        new ActuatorTemplate { Name = "UP-Schaltaktor 1-fach 10 A", Kind = ActuatorKind.Switch, Mounting = ActuatorMounting.Room, ChannelCount = 1, MaxCurrentPerChannel = 10 },
+        new ActuatorTemplate { Name = "UP-Schaltaktor 2-fach 10 A", Kind = ActuatorKind.Switch, Mounting = ActuatorMounting.Room, ChannelCount = 2, MaxCurrentPerChannel = 10 },
+        new ActuatorTemplate { Name = "UP-Dimmaktor 1-fach 200 W", Kind = ActuatorKind.Dimmer, Mounting = ActuatorMounting.Room, ChannelCount = 1, MaxCurrentPerChannel = 0.9, MaxPowerPerChannel = 200 },
+    };
+
+    private const string SeededFunctionsKey = "Seeded.Functions";
+    private const string SeededActuatorTemplatesKey = "Seeded.ActuatorTemplates";
+
     private PlannerDbContext CreateContext() => new(_options);
 
     /// <summary>Legt die Datenbank an bzw. aktualisiert sie und befüllt Standard-Funktionen.</summary>
@@ -49,14 +64,29 @@ public class PlannerDataService
         using var ctx = CreateContext();
         ctx.Database.Migrate();
 
-        if (!ctx.CableFunctions.Any())
+        // Standarddaten nur einmal anlegen – wer sie löscht, bekommt sie nicht ungefragt wieder.
+        if (!IsSeeded(ctx, SeededFunctionsKey))
         {
-            var order = 0;
-            foreach (var name in DefaultFunctions)
-                ctx.CableFunctions.Add(new CableFunction { Name = name, SortOrder = ++order });
+            if (!ctx.CableFunctions.Any())
+            {
+                var order = 0;
+                foreach (var name in DefaultFunctions)
+                    ctx.CableFunctions.Add(new CableFunction { Name = name, SortOrder = ++order });
+            }
+            ctx.AppSettings.Add(new AppSetting { Key = SeededFunctionsKey, Value = "1" });
+            ctx.SaveChanges();
+        }
+
+        if (!IsSeeded(ctx, SeededActuatorTemplatesKey))
+        {
+            if (!ctx.ActuatorTemplates.Any())
+                ctx.ActuatorTemplates.AddRange(CreateDefaultActuatorTemplates());
+            ctx.AppSettings.Add(new AppSetting { Key = SeededActuatorTemplatesKey, Value = "1" });
             ctx.SaveChanges();
         }
     }
+
+    private static bool IsSeeded(PlannerDbContext ctx, string key) => ctx.AppSettings.Any(s => s.Key == key);
 
     // ---------- Allgemein ----------
 
@@ -171,9 +201,13 @@ public class PlannerDataService
     /// Ermittelt die nächste Kabel-Nr. anhand der höchsten vorhandenen Nummer
     /// mit gleichem Präfix (z. B. W1, W2 → W3). Standard ist "W".
     /// </summary>
-    public static string SuggestNextCableNumber(IEnumerable<string?> existingNumbers)
+    public static string SuggestNextCableNumber(IEnumerable<string?> existingNumbers) =>
+        SuggestNextNumber(existingNumbers, "W");
+
+    /// <summary>Nächste fortlaufende Kennzeichnung (Präfix + Zahl) anhand der höchsten vorhandenen.</summary>
+    public static string SuggestNextNumber(IEnumerable<string?> existingNumbers, string defaultPrefix)
     {
-        var prefix = "W";
+        var prefix = defaultPrefix;
         var max = 0;
 
         foreach (var number in existingNumbers)
@@ -240,5 +274,142 @@ public class PlannerDataService
     {
         using var ctx = CreateContext();
         return ctx.CableLists.Count(l => l.DistributionBoardId == boardId);
+    }
+
+    // ---------- Aktor-Vorlagen und Aktoren ----------
+
+    public List<ActuatorTemplate> GetActuatorTemplates()
+    {
+        using var ctx = CreateContext();
+        return ctx.ActuatorTemplates.AsNoTracking()
+            .OrderBy(t => t.Mounting).ThenBy(t => t.Kind).ThenBy(t => t.Name)
+            .ToList();
+    }
+
+    public int CountActuatorsWithTemplate(int templateId)
+    {
+        using var ctx = CreateContext();
+        return ctx.Actuators.Count(a => a.TemplateId == templateId);
+    }
+
+    public List<Actuator> GetActuators(int projectId)
+    {
+        using var ctx = CreateContext();
+        return ctx.Actuators.AsNoTracking()
+            .Where(a => a.ProjectId == projectId)
+            .OrderBy(a => a.Name)
+            .ToList();
+    }
+
+    /// <summary>Schlägt die nächste Aktor-Kennzeichnung vor (A1, A2, …).</summary>
+    public string SuggestNextActuatorName(int projectId)
+    {
+        using var ctx = CreateContext();
+        var names = ctx.Actuators.AsNoTracking().Where(a => a.ProjectId == projectId).Select(a => a.Name).ToList();
+        return SuggestNextNumber(names, "A");
+    }
+
+    /// <summary>Löscht einen Aktor und gibt alle ihm zugewiesenen Kanäle frei.</summary>
+    public void DeleteActuator(Actuator actuator)
+    {
+        using var ctx = CreateContext();
+        ctx.RoomFunctions.Where(r => r.ActuatorId == actuator.Id)
+            .ExecuteUpdate(u => u.SetProperty(r => r.ActuatorId, (int?)null).SetProperty(r => r.Channel, (int?)null));
+        ctx.Actuators.Where(a => a.Id == actuator.Id).ExecuteDelete();
+    }
+
+    public int CountRoomFunctionsOfActuator(int actuatorId)
+    {
+        using var ctx = CreateContext();
+        return ctx.RoomFunctions.Count(r => r.ActuatorId == actuatorId);
+    }
+
+    // ---------- Raum-Funktionen ----------
+
+    public List<RoomFunction> GetRoomFunctions(int projectId)
+    {
+        using var ctx = CreateContext();
+        return ctx.RoomFunctions.AsNoTracking()
+            .Where(r => r.ProjectId == projectId)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Legt für jede Kombination aus Raum und Funktion, die in den Kabellisten des Projekts
+    /// vorkommt, eine Raum-Funktion (Kreis 1) an, falls noch keine existiert.
+    /// </summary>
+    /// <returns>Anzahl neu angelegter Raum-Funktionen.</returns>
+    public int SyncRoomFunctionsFromCables(int projectId)
+    {
+        using var ctx = CreateContext();
+        var combos = GetCableCombos(ctx, projectId).Select(c => (c.RoomId, c.FunctionId)).Distinct().ToList();
+
+        var existing = ctx.RoomFunctions.AsNoTracking()
+            .Where(r => r.ProjectId == projectId)
+            .Select(r => new { r.RoomId, r.FunctionId })
+            .ToList()
+            .Select(r => (r.RoomId, r.FunctionId))
+            .ToHashSet();
+
+        var added = 0;
+        foreach (var combo in combos.Where(c => !existing.Contains(c)))
+        {
+            ctx.RoomFunctions.Add(new RoomFunction
+            {
+                ProjectId = projectId,
+                RoomId = combo.RoomId,
+                FunctionId = combo.FunctionId,
+                Circuit = 1,
+            });
+            added++;
+        }
+
+        ctx.SaveChanges();
+        return added;
+    }
+
+    /// <summary>
+    /// Liefert je (Raum, Funktion) die Kabel-Nummern aus allen Kabellisten des Projekts,
+    /// z. B. "W1, W4 (UV-EG)".
+    /// </summary>
+    public Dictionary<(int RoomId, int FunctionId), string> GetCableSummaryByRoomFunction(int projectId)
+    {
+        using var ctx = CreateContext();
+        return GetCableCombos(ctx, projectId)
+            .GroupBy(c => (c.RoomId, c.FunctionId))
+            .ToDictionary(
+                g => g.Key,
+                g => string.Join("; ", g.GroupBy(c => c.BoardName)
+                    .Select(b => $"{string.Join(", ", b.Select(c => c.Number))} ({b.Key})")));
+    }
+
+    private static List<(int RoomId, int FunctionId, string Number, string BoardName)> GetCableCombos(PlannerDbContext ctx, int projectId)
+    {
+        var query =
+            from c in ctx.Cables
+            join l in ctx.CableLists on c.CableListId equals l.Id
+            join b in ctx.DistributionBoards on l.DistributionBoardId equals b.Id
+            where l.ProjectId == projectId && c.RoomId != null && c.FunctionId != null
+            orderby b.Name, c.SortOrder
+            select new { RoomId = c.RoomId!.Value, FunctionId = c.FunctionId!.Value, c.Number, BoardName = b.Name };
+
+        return query.AsNoTracking().ToList()
+            .Select(x => (x.RoomId, x.FunctionId, x.Number, x.BoardName))
+            .ToList();
+    }
+
+    /// <summary>Legt einen weiteren Kreis für dieselbe Raum-Funktion an (nächste Kreis-Nummer).</summary>
+    public RoomFunction AddCircuit(int projectId, int roomId, int functionId)
+    {
+        using var ctx = CreateContext();
+        var max = ctx.RoomFunctions
+            .Where(r => r.ProjectId == projectId && r.RoomId == roomId && r.FunctionId == functionId)
+            .Select(r => (int?)r.Circuit)
+            .Max() ?? 0;
+
+        var rf = new RoomFunction { ProjectId = projectId, RoomId = roomId, FunctionId = functionId, Circuit = max + 1 };
+        ctx.RoomFunctions.Add(rf);
+        ctx.SaveChanges();
+        return rf;
     }
 }

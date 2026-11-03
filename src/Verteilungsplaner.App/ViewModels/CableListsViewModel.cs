@@ -9,7 +9,7 @@ using Verteilungsplaner.Core.Services;
 namespace Verteilungsplaner.App.ViewModels;
 
 /// <summary>Kabellisten eines Projekts anlegen und bearbeiten.</summary>
-public partial class CableListsViewModel : ObservableObject
+public partial class CableListsViewModel : ObservableObject, IProjectPage
 {
     private readonly PlannerDataService _data;
     private readonly IDialogService _dialogs;

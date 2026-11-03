@@ -47,6 +47,8 @@ public partial class App : Application
         var main = new MainViewModel(
             new StartViewModel(data, dialogs),
             new CableListsViewModel(data, dialogs),
+            new RoomFunctionsViewModel(data, dialogs),
+            new ActuatorsViewModel(data, dialogs),
             new SettingsViewModel(data, dialogs));
 
         MainWindow = new MainWindow { DataContext = main };

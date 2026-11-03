@@ -1,0 +1,172 @@
+<UserControl x:Class="Verteilungsplaner.App.Views.CableListsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.InputBindings>
+        <KeyBinding Modifiers="Ctrl" Key="N" Command="{Binding AddCableCommand}" />
+        <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding DuplicateCableCommand}" />
+    </UserControl.InputBindings>
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <Style x:Key="GridComboBox" TargetType="ComboBox">
+            <Setter Property="DisplayMemberPath" Value="Name" />
+            <Setter Property="SelectedValuePath" Value="Id" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="4,2" />
+            <Setter Property="IsTextSearchEnabled" Value="True" />
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- Kopf -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Projekt:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource MutedTextBrush}" />
+                <ComboBox Width="280" ItemsSource="{Binding Projects}" SelectedItem="{Binding SelectedProject}"
+                          DisplayMemberPath="Name" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Style="{StaticResource PageTitle}" Text="Kabellisten" />
+                <TextBlock Style="{StaticResource PageSubtitle}" Margin="0"
+                           Text="Kabellisten je Projekt und UV anlegen, Kabeln Räume und Funktionen zuweisen. Änderungen werden automatisch gespeichert." />
+            </StackPanel>
+        </DockPanel>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Kabellisten des Projekts -->
+            <Border Style="{StaticResource Card}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitle}" Text="Kabellisten im Projekt" />
+
+                    <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                        <Button HorizontalAlignment="Left" Style="{StaticResource DangerButton}"
+                                Content="Ausgewählte Liste löschen" Command="{Binding DeleteCableListCommand}" />
+
+                        <Separator Margin="0,12" />
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Neue Kabelliste" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="Name" Margin="0,0,0,2" />
+                        <TextBox Text="{Binding NewListName, UpdateSourceTrigger=PropertyChanged}"
+                                 ToolTip="Leer lassen für automatischen Namen" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="Unterverteilung (UV)" />
+                        <ComboBox ItemsSource="{Binding Boards}" SelectedItem="{Binding NewListBoard}" DisplayMemberPath="Name" />
+                        <Button Style="{StaticResource PrimaryButton}" Margin="0,10,0,0" HorizontalAlignment="Left"
+                                Content="+ Kabelliste anlegen" Command="{Binding CreateCableListCommand}" />
+                    </StackPanel>
+
+                    <DataGrid ItemsSource="{Binding CableLists}" SelectedItem="{Binding SelectedCableList}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+                            <DataGridTemplateColumn Header="UV" Width="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox Style="{StaticResource GridComboBox}"
+                                                  ItemsSource="{Binding DataContext.Boards, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                  SelectedValue="{Binding DistributionBoardId, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+
+            <!-- Kabel der ausgewählten Liste -->
+            <Border Grid.Column="2" Style="{StaticResource Card}">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding Summary}" VerticalAlignment="Center"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   Visibility="{Binding HasCableList, Converter={StaticResource BoolToVis}}" />
+                        <TextBlock Style="{StaticResource SectionTitle}" Margin="0" Text="{Binding SelectedCableListTitle}" />
+                    </DockPanel>
+
+                    <!-- Werkzeugleiste -->
+                    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,10" IsEnabled="{Binding HasCableList}">
+                        <Button Style="{StaticResource PrimaryButton}" Content="+ Kabel" Command="{Binding AddCableCommand}" ToolTip="Neues Kabel (Strg+N)" />
+                        <Button Content="Duplizieren" Command="{Binding DuplicateCableCommand}" ToolTip="Ausgewähltes Kabel kopieren (Strg+D)" />
+                        <Button Content="▲" MinWidth="34" Command="{Binding MoveUpCommand}" ToolTip="Nach oben" />
+                        <Button Content="▼" MinWidth="34" Command="{Binding MoveDownCommand}" ToolTip="Nach unten" />
+                        <Button Style="{StaticResource DangerButton}" Content="Kabel löschen" Command="{Binding DeleteCableCommand}" />
+
+                        <Border Width="1" Background="{StaticResource BorderBrushLight}" Margin="6,2,12,2" />
+
+                        <TextBox Width="140" Margin="0,0,6,0" Text="{Binding QuickRoomName, UpdateSourceTrigger=PropertyChanged}"
+                                 ToolTip="Neuen Raum direkt hier anlegen">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding AddRoomCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
+                        <Button Content="+ Raum" Command="{Binding AddRoomCommand}" />
+
+                        <Border Width="1" Background="{StaticResource BorderBrushLight}" Margin="6,2,12,2" />
+
+                        <Button Content="📊 Excel-Export" Command="{Binding ExportExcelCommand}" />
+                    </WrapPanel>
+
+                    <Grid>
+                        <DataGrid x:Name="CableGrid" ItemsSource="{Binding Cables}" SelectedItem="{Binding SelectedCable}"
+                                  FrozenColumnCount="2" CanUserSortColumns="False"
+                                  HorizontalScrollBarVisibility="Auto">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Kabel-Nr." Binding="{Binding Number}" Width="80" />
+                                <DataGridTextColumn Header="Bezeichnung" Binding="{Binding Designation}" Width="180" />
+                                <DataGridTemplateColumn Header="Raum" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox Style="{StaticResource GridComboBox}"
+                                                      ItemsSource="{Binding DataContext.RoomOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                      SelectedValue="{Binding RoomId, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Funktion" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox Style="{StaticResource GridComboBox}"
+                                                      ItemsSource="{Binding DataContext.FunctionOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                      SelectedValue="{Binding FunctionId, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Kabeltyp" Binding="{Binding CableType}" Width="90" />
+                                <DataGridTextColumn Header="Querschnitt" Binding="{Binding CrossSection}" Width="85" />
+                                <DataGridTextColumn Header="Länge (m)" Binding="{Binding Length, TargetNullValue=''}" Width="75">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="HorizontalAlignment" Value="Right" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Absicherung" Binding="{Binding Fuse}" Width="85" />
+                                <DataGridTextColumn Header="Klemme" Binding="{Binding Terminal}" Width="80" />
+                                <DataGridTextColumn Header="Bemerkung" Binding="{Binding Remark}" Width="160" />
+                                <DataGridTextColumn Header="Zusatztext" Binding="{Binding AdditionalText}" Width="160" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"
+                                   Foreground="{StaticResource MutedTextBrush}" FontSize="14"
+                                   Text="Links eine Kabelliste auswählen oder neu anlegen.&#10;Voraussetzung: Projekt mit mindestens einer UV (Startseite).">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasCableList}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

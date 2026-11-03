@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Verteilungsplaner.App</RootNamespace>
+    <AssemblyName>Verteilungsplaner</AssemblyName>
+    <AssemblyTitle>Verteilungsplaner</AssemblyTitle>
+    <Product>Verteilungsplaner</Product>
+    <Version>0.1.0</Version>
+    <!-- Ermöglicht das Bauen auch auf Nicht-Windows-Systemen (z. B. CI). Ausführen nur unter Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Verteilungsplaner.Core\Verteilungsplaner.Core.csproj" />
+  </ItemGroup>
+
+</Project>

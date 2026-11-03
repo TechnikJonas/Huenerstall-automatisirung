@@ -1,0 +1,47 @@
+<Window x:Class="Verteilungsplaner.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Verteilungsplaner.App.ViewModels"
+        xmlns:views="clr-namespace:Verteilungsplaner.App.Views"
+        Title="Verteilungsplaner" Height="780" Width="1320" MinHeight="560" MinWidth="960"
+        WindowStartupLocation="CenterScreen" FontFamily="Segoe UI" FontSize="13"
+        Background="{StaticResource PageBackgroundBrush}">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:StartViewModel}">
+            <views:StartView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CableListsViewModel}">
+            <views:CableListsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+            <views:SettingsView />
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="210" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Navigation -->
+        <DockPanel Background="{StaticResource NavBackgroundBrush}">
+            <StackPanel DockPanel.Dock="Top" Margin="18,20,18,24">
+                <TextBlock Text="⚡ Verteilungsplaner" Foreground="White" FontSize="17" FontWeight="SemiBold" />
+                <TextBlock Text="Planung von Verteilungen" Foreground="#8FA1B3" FontSize="11" Margin="0,2,0,0" />
+            </StackPanel>
+            <TextBlock DockPanel.Dock="Bottom" Text="Version 0.1" Foreground="#6E8093" FontSize="11" Margin="18,0,0,14" />
+            <StackPanel>
+                <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" IsChecked="True"
+                             Command="{Binding ShowStartCommand}" Content="🏠  Start" />
+                <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" x:Name="NavCableLists"
+                             Command="{Binding ShowCableListsPageCommand}" Content="🔌  Kabellisten" />
+                <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" x:Name="NavSettings"
+                             Command="{Binding ShowSettingsCommand}" Content="⚙  Einstellungen" />
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Inhalt -->
+        <ContentControl Grid.Column="1" Content="{Binding CurrentPage}" Margin="24,20,24,20" />
+    </Grid>
+</Window>

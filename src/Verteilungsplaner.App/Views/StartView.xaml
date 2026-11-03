@@ -1,0 +1,176 @@
+<UserControl x:Class="Verteilungsplaner.App.Views.StartView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Style="{StaticResource PageTitle}" Text="Start – Projekte &amp; Unterverteilungen" />
+            <TextBlock Style="{StaticResource PageSubtitle}"
+                       Text="Lege hier Projekte an und erfasse je Projekt die Unterverteilungen (UV) und Räume. Änderungen werden automatisch gespeichert." />
+        </StackPanel>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Projektliste -->
+            <Border Style="{StaticResource Card}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitle}" Text="Projekte" />
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button Style="{StaticResource PrimaryButton}" Content="+ Neues Projekt" Command="{Binding AddProjectCommand}" />
+                        <Button Style="{StaticResource DangerButton}" Content="Löschen" Command="{Binding DeleteProjectCommand}" />
+                    </StackPanel>
+                    <ListBox ItemsSource="{Binding Projects}" SelectedItem="{Binding SelectedProject}"
+                             BorderBrush="{StaticResource BorderBrushLight}" HorizontalContentAlignment="Stretch">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="4,5">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Number}" Foreground="{StaticResource MutedTextBrush}" FontSize="11" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Hinweis wenn kein Projekt -->
+            <Border Grid.Column="2">
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding HasProject}" Value="False">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center"
+                           Foreground="{StaticResource MutedTextBrush}" FontSize="14"
+                           Text="Noch kein Projekt vorhanden.&#10;Klicke links auf „+ Neues Projekt“." />
+            </Border>
+
+            <!-- Projektdetails -->
+            <Grid Grid.Column="2" Visibility="{Binding HasProject, Converter={StaticResource BoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="16" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <DockPanel Grid.ColumnSpan="3">
+                            <Button DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Margin="0"
+                                    Content="Kabellisten öffnen →" Command="{Binding OpenCableListsCommand}" />
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Projektdaten" VerticalAlignment="Center" />
+                        </DockPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="0">
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="Projektname *" />
+                            <TextBox Text="{Binding SelectedProject.Name, UpdateSourceTrigger=LostFocus}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="2">
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="Projektnummer" />
+                            <TextBox Text="{Binding SelectedProject.Number, UpdateSourceTrigger=LostFocus}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="0">
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="Kunde / Bauherr" />
+                            <TextBox Text="{Binding SelectedProject.Customer, UpdateSourceTrigger=LostFocus}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="2">
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="Adresse" />
+                            <TextBox Text="{Binding SelectedProject.Address, UpdateSourceTrigger=LostFocus}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="3" Grid.ColumnSpan="3">
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="Beschreibung" />
+                            <TextBox Text="{Binding SelectedProject.Description, UpdateSourceTrigger=LostFocus}"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Height="48" VerticalContentAlignment="Top" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Unterverteilungen -->
+                    <Border Style="{StaticResource Card}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitle}" Text="Unterverteilungen (UV)" />
+                            <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+                                <Button DockPanel.Dock="Right" Style="{StaticResource DangerButton}" Margin="6,0,0,0"
+                                        Content="Löschen" Command="{Binding DeleteBoardCommand}" />
+                                <Button DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Margin="6,0,0,0"
+                                        Content="+ UV" Command="{Binding AddBoardCommand}" IsDefault="False" />
+                                <TextBox Text="{Binding NewBoardName, UpdateSourceTrigger=PropertyChanged}"
+                                         ToolTip="Name der neuen UV, z. B. UV-EG">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding AddBoardCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                            </DockPanel>
+                            <DataGrid ItemsSource="{Binding Boards}" SelectedItem="{Binding SelectedBoard}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Bezeichnung" Binding="{Binding Name}" Width="*" />
+                                    <DataGridTextColumn Header="Einbauort" Binding="{Binding Location}" Width="*" />
+                                    <DataGridTextColumn Header="Beschreibung" Binding="{Binding Description}" Width="1.5*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Räume -->
+                    <Border Grid.Column="2" Style="{StaticResource Card}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitle}" Text="Räume" />
+                            <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+                                <Button DockPanel.Dock="Right" Style="{StaticResource DangerButton}" Margin="6,0,0,0"
+                                        Content="Löschen" Command="{Binding DeleteRoomCommand}" />
+                                <Button DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Margin="6,0,0,0"
+                                        Content="+ Raum" Command="{Binding AddRoomCommand}" />
+                                <TextBox DockPanel.Dock="Left" Width="60" Margin="0,0,6,0"
+                                         Text="{Binding NewRoomFloor, UpdateSourceTrigger=PropertyChanged}"
+                                         ToolTip="Geschoss, z. B. EG, OG, KG" />
+                                <TextBox Text="{Binding NewRoomName, UpdateSourceTrigger=PropertyChanged}"
+                                         ToolTip="Raumname, z. B. Küche">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding AddRoomCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                            </DockPanel>
+                            <DataGrid ItemsSource="{Binding Rooms}" SelectedItem="{Binding SelectedRoom}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Geschoss" Binding="{Binding Floor}" Width="90" />
+                                    <DataGridTextColumn Header="Raum" Binding="{Binding Name}" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,69 @@
+<UserControl x:Class="Verteilungsplaner.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Style="{StaticResource PageTitle}" Text="Einstellungen" />
+            <TextBlock Style="{StaticResource PageSubtitle}"
+                       Text="Die hier gepflegten Funktionen stehen in allen Kabellisten aller Projekte zur Auswahl." />
+        </StackPanel>
+
+        <Border DockPanel.Dock="Bottom" Style="{StaticResource Card}" Margin="0,16,0,0" MaxWidth="900" HorizontalAlignment="Left">
+            <StackPanel>
+                <TextBlock Style="{StaticResource SectionTitle}" Text="Datenbank" />
+                <TextBlock Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap">
+                    <Run Text="Alle Daten werden lokal gespeichert in:" />
+                    <LineBreak />
+                    <Run Text="{Binding DatabasePath, Mode=OneWay}" FontFamily="Consolas" />
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource Card}" MaxWidth="900" HorizontalAlignment="Left">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitle}" Text="Funktionen" />
+
+                <Grid DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="220" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="Neue Funktion" />
+                    <TextBlock Grid.Column="2" Style="{StaticResource FieldLabel}" Text="Beschreibung (optional)" />
+                    <TextBox Grid.Row="1" Text="{Binding NewFunctionName, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding AddFunctionCommand}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding NewFunctionDescription, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding AddFunctionCommand}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <Button Grid.Row="1" Grid.Column="3" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0"
+                            Content="+ Hinzufügen" Command="{Binding AddFunctionCommand}" />
+                </Grid>
+
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Right" Margin="10,0,0,0">
+                        <Button Content="▲ Nach oben" Margin="0,0,0,6" Command="{Binding MoveUpCommand}" />
+                        <Button Content="▼ Nach unten" Margin="0,0,0,6" Command="{Binding MoveDownCommand}" />
+                        <Button Style="{StaticResource DangerButton}" Content="Löschen" Margin="0" Command="{Binding DeleteFunctionCommand}" />
+                    </StackPanel>
+                    <DataGrid ItemsSource="{Binding Functions}" SelectedItem="{Binding SelectedFunction}" CanUserSortColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Funktion" Binding="{Binding Name}" Width="220" />
+                            <DataGridTextColumn Header="Beschreibung" Binding="{Binding Description}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </DockPanel>
+        </Border>
+    </DockPanel>
+</UserControl>
